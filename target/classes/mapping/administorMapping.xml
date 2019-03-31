@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.accp.dao.IAdministorDao">
+	<resultMap id="AdministorMap" type="Administor">
+		<result column="aNumber" property="aNumber"/>
+		<result column="Name" property="name"/>
+		<result column="Pwd" property="pwd"/>
+		<result column="status" property="status"/>
+	</resultMap>
+
+	<resultMap id="NewMap" type="New">
+		<result property="id" column="id"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="time" column="time"/>
+	</resultMap>
+	<select id="queryAdministor" resultMap="AdministorMap">
+		select * from Administor
+		<where>
+			<if test="aNumber != null and aNumber != ''">
+				and aNumber = #{aNumber}
+			</if>
+			<if test="name != null and name != ''">
+			   and Name=#{name}
+			</if>
+			<if test="pwd != null and pwd != ''">
+				and Pwd=#{pwd}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryNew" resultMap="NewMap">
+		select * from new
+	  	LIMIT #{pageNum},#{pageSize}
+	</select>
+
+
+	<resultMap id="OrderMap" type="Order">
+		<result property="oNumber" column="oNumber"/>
+		<result property="oTime" column="oTime"/>
+		<result property="price" column="price"/>
+		<result property="status" column="status"/>
+		<association property="user" resultMap="UserMap"/>
+		<association property="sch" resultMap="SchMap"/>
+	</resultMap>
+
+	<resultMap id="UserMap" type="User">
+		<result property="uname" column="uname"/>
+		<result property="pwd" column="pwd"/>
+		<result property="id" column="id"/>
+		<result property="tel" column="tel"/>
+		<result property="info" column="info"/>
+	</resultMap>
+
+	<resultMap id="SchMap" type="Sch">
+		<result property="sNumber" column="sNumber"/>
+		<result property="cNumber" column="cNumber"/>
+		<result property="total" column="total"/>
+		<result property="price" column="price"/>
+		<result property="sTime" column="sTime"/>
+		<result property="eTime" column="eTime"/>
+		<association property="doctor" resultMap="DoctorMap"/>
+
+	</resultMap>
+
+	<resultMap id="DoctorMap" type="Doctor">
+		<result column="dNumber" property="dNumber"/>
+		<result column="name" property="name"/>
+		<result column="dPwd" property="dPwd"/>
+		<result column="dInfo" property="dInfo"/>
+		<result column="dResume" property="dResume"/>
+		<result column="dTel" property="dTel"/>
+		<result column="dEmail" property="dEmail"/>
+		<result column="image" property="image"/>
+		<association property="department" resultMap="DepartmentMap"/>
+	</resultMap>
+
+	<resultMap id="DepartmentMap" type="Department">
+		<result property="cNumber" column="cNumber"/>
+		<result property="dName" column="dName"/>
+		<result property="dDec" column="dDec"/>
+	</resultMap>
+
+	<select id="getAllO" resultMap="OrderMap">
+		select * from uorder uo,sche s,doctor d,user u
+		<where>
+			uo.id=u.id and uo.sNumber=s.sNumber and s.dNumber=d.dNumber
+			<if test="chose==3">
+				and d.name like #{info}
+			</if>
+			<if test="chose==2">
+				and u.uname like #{info}
+			</if>
+			<if test="chose==1">
+				and uo.oNumber like #{info}
+			</if>
+		</where>
+	</select>
+
+	<select id="getAllOrder" resultMap="OrderMap">
+		select * from uorder uo,user u,sche s,doctor do,department de
+		<where>
+			uo.id=u.id and uo.sNumber=s.sNumber and s.dNumber=do.dNumber and do.cNumber=de.cNumber
+			<if test="chose==3">
+				and do.name like #{info}
+			</if>
+			<if test="chose==2">
+				and u.uname like #{info}
+			</if>
+			<if test="chose==1">
+				and uo.oNumber like #{info}
+			</if>
+		</where>
+		limit #{pageNum},#{pageSize}
+	</select>
+
+	<resultMap id="CountMap" type="Count">
+		<result property="dNumber" column="dNumber"/>
+		<result property="name" column="name"/>
+		<result property="sum" column="sum"/>
+		<result property="count" column="count"/>
+	</resultMap>
+
+	<select id="getCount" resultMap="CountMap">
+		SELECT d.dNumber,d.name,`sum`,`count` FROM (SELECT sNumber,dNumber FROM sche WHERE sNumber IN(SELECT sNumber FROM uorder GROUP BY sNumber)
+) a,(SELECT sNumber,SUM(price) AS `sum`,COUNT(*) AS `count` FROM uorder GROUP BY sNumber
+) b,doctor d
+		<where>
+		a.sNumber=b.sNumber AND a.dNumber=d.dNumber
+		<if test="chose==1">
+			and d.dNumber like #{info}
+		</if>
+		<if test="chose==2">
+			and d.name like #{info}
+		</if>
+	</where>
+limit #{pageNum},#{pageSize}
+	</select>
+
+	<select id="getAllC" resultMap="CountMap">
+		SELECT d.dNumber,d.name,`sum`,`count` FROM (SELECT sNumber,dNumber FROM sche WHERE sNumber IN(SELECT sNumber FROM uorder GROUP BY sNumber)
+) a,(SELECT sNumber,SUM(price) AS `sum`,COUNT(*) AS `count` FROM uorder GROUP BY sNumber
+) b,doctor d
+<where>
+	a.sNumber=b.sNumber AND a.dNumber=d.dNumber
+	<if test="chose==1">
+		and d.dNumber like #{info}
+	</if>
+	<if test="chose==2">
+		and d.name like #{info}
+	</if>
+</where>
+	</select>
+
+	<select id="getFeedBack" resultType="com.accp.entity.Feedback">
+		select * from FeedBack
+	</select>
+	<select id="getFeedBackByPage" resultType="com.accp.entity.Feedback">
+		select * from FeedBack
+		LIMIT #{pageNum},#{pageSize}
+	</select>
+	<delete id="deleteFeedBack">
+		delete FROM FeedBack where id = #{id}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.starry.dao.IUserDao">
+	<resultMap id="OrderMap" type="com.accp.entity.Order">
+		<result column="oNumber" property="oNumber"/>
+		<result column="sNumber" property="sNumber"/>
+		<result column="id" property="id"/>
+		<result column="oTime" property="oTime"/>
+		<result column="price" property="price"/>
+		<result column="status" property="status"/>
+	</resultMap>
+	<select id="getAllOrder" resultType="com.accp.entity.Order">
+		select * from uorder
+	</select>
+	<select id="getAllOrderByPage" resultType="com.accp.entity.Order">
+		select * from uorder limit #{pageNum},#{pageSize}
+	</select>
+</mapper>

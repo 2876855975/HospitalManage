@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.accp.dao.IDepartmentDao">
+	<delete id="deleteById">
+		delete from Department
+		where cNumber=#{id}
+	</delete>
+	<select id="Bing" resultMap="DepartmentMap">
+		select * from department
+	</select>
+	<update id="updateDepart">
+		update Department set dName=#{dName},dDec=#{dDec} where cNumber=#{cNumber}
+	</update>
+
+	<resultMap id="DepartmentMap" type="Department">
+		<result property="cNumber" column="cNumber"/>
+		<result property="dName" column="dName"/>
+		<result property="dDec" column="dDec"/>
+	</resultMap>
+	<insert id="addDepart">
+		insert into department values(#{cNumber},#{dName},#{dDec})
+	</insert>
+	<select id="getAllDepartment" resultMap="DepartmentMap">
+		select * from department
+		<where>
+			<if test="chose==1">
+				cNumber like #{info}
+			</if>
+			<if test="chose==2">
+				dName like #{info}
+			</if>
+		</where>
+	</select>
+	<select id="getAll" resultMap="DepartmentMap">
+		select * from department
+		<where>
+			<if test="chose==1">
+				cNumber like #{info}
+			</if>
+			<if test="chose==2">
+				dName like #{info}
+			</if>
+		</where>
+		limit #{pageNum},#{pageSize}
+	</select>
+
+	<select id="findId" resultMap="DepartmentMap">
+		select * from department
+		<where>
+			cNumber like #{info}
+		</where>
+		limit #{pageNum},#{pageSize}
+	</select>
+
+	<select id="findName" resultMap="DepartmentMap">
+		select * from department
+		<where>
+			dName like #{info}
+		</where>
+		limit #{pageNum},#{pageSize}
+	</select>
+	<select id="findIds" resultMap="DepartmentMap">
+		select * from department
+		<where>
+			cNumber = #{cNumber}
+		</where>
+	</select>
+</mapper>

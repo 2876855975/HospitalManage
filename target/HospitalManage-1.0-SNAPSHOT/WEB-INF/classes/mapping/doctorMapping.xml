@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.accp.dao.IDoctorDao">
+
+    <resultMap id="DoctorMap" type="Doctor">
+        <result column="dNumber" property="dNumber"/>
+        <result column="name" property="name"/>
+        <result column="dPwd" property="dPwd"/>
+        <result column="dInfo" property="dInfo"/>
+        <result column="dResume" property="dResume"/>
+        <result column="dTel" property="dTel"/>
+        <result column="dEmail" property="dEmail"/>
+        <result column="image" property="image"/>
+        <association property="department" resultMap="DepartmentMap"/>
+    </resultMap>
+
+
+    <resultMap id="DepartmentMap" type="Department">
+        <result property="cNumber" column="cNumber"/>
+        <result property="dName" column="dName"/>
+        <result property="dDec" column="dDec"/>
+    </resultMap>
+
+    <select id="queryDoctor" resultMap="DoctorMap">
+		select * from doctor where dNumber=#{dNumber} and dPwd=#{dPwd}
+	</select>
+    <select id="queryDoctorE" resultMap="DoctorMap">
+		select * from doctor where dEmail=#{email}
+	</select>
+
+    <select id="selectAll" resultMap="DoctorMap">
+        select * from doctor a,department d
+        <where>
+            <if test="chose==1">
+                a.dNumber like #{info} and
+            </if>
+            <if test="chose==2">
+                a.name like #{info} and
+            </if>
+            <if test="chose==3">
+                d.dName like #{info} and
+            </if>
+            a.cNumber=d.cNumber
+        </where>
+        limit #{pageNum},#{pageSize}
+    </select>
+
+    <select id="queryAll" resultMap="DoctorMap">
+        select * from doctor a,department d
+        <where>
+            <if test="chose==1">
+                a.dNumber like #{info} and
+            </if>
+            <if test="chose==2">
+                a.name like #{info} and
+            </if>
+            <if test="chose==3">
+                d.dName like #{info} and
+            </if>
+            a.cNumber=d.cNumber
+        </where>
+    </select>
+    <select id="JsonDoctor" resultType="DoctorInfoJson">
+				select doctor.dNumber,department.dName,doctor.name,doctor.dTel,doctor.dInfo,doctor.dEmail,doctor.dResume,	doctor.image,sche.total,sche.price,sche.sTime,sche.eTime
+					from doctor LEFT JOIN sche on doctor.dNumber=sche.dNumber
+					 LEFT JOIN department	on department.cNumber=doctor.cNumber
+			    where doctor.dNumber=#{dNumber} and doctor.cNumber=#{cNumber}
+
+	</select>
+		<select id="JsonAllDoctor" resultType="Jsondoctor">
+			select doctor.dNumber,department.dName,doctor.name,doctor.dInfo,doctor.image
+			from doctor,department
+			where  doctor.cNumber=department.cNumber and department.cNumber=#{cNumber}
+
+	</select>
+	<select id="JsonDoctorByName" resultType="Jsondoctor">
+			select doctor.dNumber,department.dName,doctor.name,doctor.dInfo,doctor.image
+			from doctor,department
+			where  doctor.cNumber=department.cNumber and doctor.name LIKE CONCAT(CONCAT('%', #{name}), '%')
+
+	</select>
+	<select id="JsonDoctorStop" resultType="DoctorInfoJson">
+			select doctor.dNumber,department.dName,doctor.name,doctor.dInfo,doctor.image
+			from doctor,department,sche
+			where  doctor.cNumber=department.cNumber and sche.cNumber=doctor.dNumber and #{time} &lt; sche.sTime and #{time} &gt; sche.eTime
+
+	</select>
+
+    <select id="getById" resultMap="DoctorMap">
+        select * from doctor a,department d where a.cNumber=d.cNumber and a.dNumber=#{id}
+    </select>
+
+    <select id="findId" resultMap="DoctorMap">
+        select * from doctor a,department d where a.cNumber=d.cNumber and a.dNumber like #{info} limit #{pageNum},#{pageSize}
+    </select>
+
+	<select id="getAllDoctor" resultType="DoctorInfo">
+		<!-- select *,department.dName from Doctor,department where doctor.cNumber=department.cNumber -->
+		select dNumber,name,department.dName,dTel,dInfo,dEmail
+		from Doctor,department
+		where doctor.cNumber=department.cNumber
+	</select>
+	<delete id="deleteByNumber" parameterType="Doctor">
+		delete from doctor
+		where dNumber=#{dNumber}
+	</delete>
+
+	<delete id="deleteById">
+		delete from doctor
+		where dNumber=#{dNumber}
+	</delete>
+	<insert id="addDoctor">
+      insert into doctor (dNumber,name,dPwd,cNumber,dInfo,dResume,dTel,dEmail,image)
+      values (#{dNumber},#{name},#{dPwd},#{department.cNumber},#{dInfo},#{dResume},#{dTel},#{dEmail},null)
+     </insert>
+
+    <resultMap id="SchMap" type="Sch">
+        <result property="sNumber" column="sNumber"/>
+        <result property="cNumber" column="cNumber"/>
+        <result property="total" column="total"/>
+        <result property="price" column="price"/>
+        <result property="sTime" column="sTime"/>
+        <result property="eTime" column="eTime"/>
+        <association property="doctor" resultMap="DoctorMap"/>
+    </resultMap>
+
+    <select id="getSInfo" resultMap="SchMap">
+        select * from sche where dNumber=#{dNumber}
+    </select>
+    <select id="getSInfoByPage" resultMap="SchMap">
+        select * from sche where dNumber=#{dNumber} limit #{pageNum},#{pageSize}
+    </select>
+     <update id="updateDoctor">
+     update doctor
+     set name=#{name},cNumber=#{department.cNumber},dInfo=#{dInfo},dResume=#{dResume},dTel=#{dTel},dEmail=#{dEmail}
+     <if test="null != dPwd and '' != dPwd">
+         ,dPwd = #{dPwd}
+     </if>
+     where dNumber=#{dNumber}
+     </update>
+
+	<select id="getDoctorByName" resultType="DoctorInfo">
+	select dNumber,name,department.dName,dTel,dInfo,dEmail
+	 	from Doctor,department
+	 	 where name LIKE CONCAT(CONCAT('%', #{name}), '%')and doctor.cNumber=department.cNumber
+	</select>
+	<select id="getDoctorBycNumber" resultType="DoctorInfo">
+	select dNumber,name,department.dName,dTel,dInfo,dEmail
+	 	from Doctor,department
+	 	 where doctor.cNumber=#{cNumber}and doctor.cNumber=department.cNumber
+	</select>
+	<select id="getOrderByDoctor" resultType="OrderInfo">
+		select uorder.oNumber,user.uname,doctor.name,uorder.price ,uorder.oTime,uorder.status
+		from uorder,sche,user,doctor
+		where uorder.id=user.id and uorder.sNumber=sche.sNumber and sche.dNumber=doctor.dNumber and doctor.dNumber=#{dNumber} order by uorder.oTime desc
+	</select>
+
+    <resultMap id="OrderMap" type="Order">
+        <result property="oNumber" column="oNumber"/>
+        <result property="oTime" column="oTime"/>
+        <result property="price" column="price"/>
+        <result property="status" column="status"/>
+        <association property="user" resultMap="UserMap"/>
+        <association property="sch" resultMap="SchMap"/>
+    </resultMap>
+
+    <resultMap id="UserMap" type="User">
+        <result property="uname" column="uname"/>
+        <result property="pwd" column="pwd"/>
+        <result property="id" column="id"/>
+        <result property="tel" column="tel"/>
+        <result property="info" column="info"/>
+    </resultMap>
+
+    <select id="queryAllOrder" resultMap="OrderMap">
+        select * from uorder where sNumber=#{sNumber}
+    </select>
+
+    <select id="queryMaxSche" resultType="_int">
+        SELECT MAX(sNumber) FROM sche
+    </select>
+
+    <select id="queryAllOrderByPage" resultMap="OrderMap">
+        select * from uorder uo,doctor d,user u,sche s
+        where uo.id=u.id and uo.sNumber=s.sNumber and s.dNumber=d.dNumber and uo.sNumber=#{sNumber} limit #{pageNum},#{pageSize}
+    </select>
+
+    <select id="getD" resultMap="DoctorMap">
+        select *
+        from Doctor
+        where dNumber=#{dNumber}
+    </select>
+    <insert id="insertSch">
+        insert into sche VALUES (#{sNumber},#{doctor.dNumber},#{cNumber},#{total},#{price},#{sTime},#{eTime},'就诊')
+    </insert>
+
+    <select id="queryQrUser" resultType="QRUser">
+        select * from qruser
+        <where>
+            <if test="dNumber != null and '' != dNumber">
+                and `dNumber` = #{dNumber}
+            </if>
+        </where>
+    </select>
+    <delete id="deleteQrUser">
+        delete FROM qruser
+        <where>
+            <if test="null != uuid and '' != uuid">
+                and `uuid` = #{uuid}
+            </if>
+            <if test="null != dNumber and '' != dNumber">
+                and `dNumber` = #{dNumber}
+            </if>
+        </where>
+    </delete>
+    <insert id="insertQrUser">
+        insert into qruser values(#{uuid},#{dNumber})
+    </insert>
+</mapper>
